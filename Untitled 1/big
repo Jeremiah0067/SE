@@ -1,0 +1,36 @@
+import sys
+import pydot
+
+def srt_to_graphviz(srt_file):
+  # create a new Graphviz graph
+  graph = pydot.Dot(graph_type='digraph')
+  
+  # open the .srt file
+  with open(srt_file, 'r') as f:
+    # read the file line by line
+    for line in f:
+      # split the line into a list of words
+      words = line.strip().split()
+      
+      # if the line is a subtitle number, create a new node for it
+      if words[0].isdigit():
+        node = pydot.Node(words[0], label=words[0])
+        graph.add_node(node)
+      # if the line is a timecode, create an edge between the current node and the next one
+      elif len(words) == 4 and words[0].count(":") == 2 and words[2].count(":") == 2:
+        # get the source and destination nodes
+        src = pydot.Node(node.get_name())
+        dest = pydot.Node(str(int(node.get_name()) + 1))
+        # create the edge
+        edge = pydot.Edge(src, dest)
+        graph.add_edge(edge)
+  
+  return graph
+
+if __name__ == "__main__":
+  # get the .srt file from the command line argument
+  srt_file = sys.argv[1]
+  # convert the .srt file to a Graphviz graph
+  graph = srt_to_graphviz(srt_file)
+  # write the graph to a file
+  graph.write_png('output.png')
